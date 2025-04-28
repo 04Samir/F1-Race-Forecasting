@@ -1,0 +1,10 @@
+colorama
+numpy
+pandas
+requests
+scikit-learn
+scipy
+tabulate
+torch
+torchaudio
+torchvision
