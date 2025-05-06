@@ -114,7 +114,7 @@ def calculate_driver_position_boundaries(results_df: pd.DataFrame, min_races: in
     return position_boundaries
 
 
-def find_top_drivers(results_df: pd.DataFrame, n: int = 5, recent_seasons_count: int = 5) -> list[str]:
+def find_top_drivers(results_df: pd.DataFrame, n: int = 3, recent_seasons_count: int = 3) -> list[str]:
     available_seasons = results_df['season'].nunique()
     recent_seasons_count = min(recent_seasons_count, available_seasons - 1) if available_seasons > 1 else 1
 

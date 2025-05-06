@@ -133,7 +133,7 @@ def fetch_data() -> None:
     session = requests.Session()
     session.headers.update(headers)
 
-    for year in range(2017, 2024 + 1):
+    for year in range(2020, 2024 + 1):
         BIN_YEAR_FOLDER = BIN_FOLDER / str(year)
         os.makedirs(BIN_YEAR_FOLDER, exist_ok=True)
 
