@@ -13,7 +13,7 @@ from .modules import (
     get_combined_domain_knowledge,
     parse_data,
     set_seeds,
-    visualize_race_predictions,
+    visualise_race_predictions,
 )
 
 warnings.filterwarnings('ignore', category=RuntimeWarning, message='Mean of empty slice')
@@ -234,20 +234,20 @@ def predict_race() -> None:
 
             metrics = evaluate_race_predictions(y_true, y_pred, evaluation_df['driver_id'].tolist())
 
-            visualize_race_predictions(
+            visualise_race_predictions(
                 display_df=display_df,
                 metrics=metrics,
                 race_info=(test_season, test_round, race_name)
             )
         else:
             logging.warning("No Matching Driver IDs Found for Evaluation")
-            visualize_race_predictions(
+            visualise_race_predictions(
                 display_df=display_df,
                 race_info=(test_season, test_round, race_name)
             )
     else:
         logging.info("No Actual Results Available for Evaluation")
-        visualize_race_predictions(
+        visualise_race_predictions(
             display_df=display_df,
             race_info=(test_season, test_round, race_name)
         )

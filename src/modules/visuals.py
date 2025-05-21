@@ -157,7 +157,7 @@ def plot_position_comparison(
 
     plt.subplots_adjust(right=0.82)
 
-    filepath = os.path.join(OUT_FOLDER, "forecast.png")
+    filepath = os.path.join(OUT_FOLDER, "forecast-comparison.png")
     os.makedirs(OUT_FOLDER, exist_ok=True)
     fig.savefig(filepath, dpi=300, bbox_inches='tight')
     logging.info(f"Saved Position Comparison Chart -> {filepath}")
@@ -219,7 +219,8 @@ def plot_evaluation_metrics(
     plt.close(fig)
     return fig
 
-def visualize_race_predictions(
+
+def visualise_race_predictions(
     display_df: pd.DataFrame,
     metrics: Optional[Dict[str, float]] = None,
     race_info: Optional[Tuple[int, int, str]] = None

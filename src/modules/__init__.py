@@ -7,4 +7,4 @@ from .fetch import fetch_data
 from .metrics import evaluate_race_predictions
 from .model import F1RacePredictor, set_seeds
 from .parse import parse_data
-from .visuals import visualize_race_predictions
+from .visuals import visualise_race_predictions
