@@ -12,8 +12,10 @@ from .modules import (
     fetch_data,
     get_combined_domain_knowledge,
     parse_data,
+    plot_evaluation_metrics,
+    plot_position_comparison,
+    plot_training_history,
     set_seeds,
-    visualise_race_predictions,
 )
 
 warnings.filterwarnings('ignore', category=RuntimeWarning, message='Mean of empty slice')
@@ -103,11 +105,12 @@ def predict_race() -> None:
 
     logging.info("Training Model . . .")
     predictor = F1RacePredictor(use_saved_model=False)
-    predictor.train(
+    train_losses, val_losses = predictor.train(
         feature_processor,
         X_train, y_train, sample_weights_train,
         X_val, y_val, sample_weights_val
     )
+    plot_training_history(train_losses, val_losses)
     logging.info("Model Trained Successfully!")
 
     logging.info("")
@@ -228,29 +231,32 @@ def predict_race() -> None:
             how='inner'
         )
 
+        actual_positions = display_df['Actual Position'].tolist()
+        predicted_positions = display_df['Predicted Position'].tolist()
+        driver_names = display_df['Driver'].tolist()
+        constructors = display_df['Constructor'].tolist()
+
+        plot_position_comparison(
+            actual_positions,
+            predicted_positions,
+            driver_names,
+            constructors,
+            (test_season, test_round, race_name),
+        )
+
         if not evaluation_df.empty:
             y_true = evaluation_df['position'].tolist()
             y_pred = evaluation_df['final_position'].tolist()
 
-            metrics = evaluate_race_predictions(y_true, y_pred, evaluation_df['driver_id'].tolist())
-
-            visualise_race_predictions(
-                display_df=display_df,
-                metrics=metrics,
-                race_info=(test_season, test_round, race_name)
+            plot_evaluation_metrics(
+                evaluate_race_predictions(y_true, y_pred, evaluation_df['driver_id'].tolist()),
+                (test_season, test_round, race_name),
             )
         else:
             logging.warning("No Matching Driver IDs Found for Evaluation")
-            visualise_race_predictions(
-                display_df=display_df,
-                race_info=(test_season, test_round, race_name)
-            )
+
     else:
         logging.info("No Actual Results Available for Evaluation")
-        visualise_race_predictions(
-            display_df=display_df,
-            race_info=(test_season, test_round, race_name)
-        )
 
     logging.info("Predictions Generated Successfully!")
 

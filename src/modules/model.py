@@ -1,7 +1,6 @@
 import logging
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 
@@ -13,7 +12,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from typing import TYPE_CHECKING
 
-from ..utils import MODEL_FOLDER, OUT_FOLDER
+from ..utils import MODEL_FOLDER
 
 if TYPE_CHECKING:
     from .features import F1FeatureProcessor
@@ -257,7 +256,7 @@ class F1RacePredictor:
         X_val: torch.FloatTensor,
         y_val: torch.FloatTensor,
         sample_weights_val: torch.FloatTensor
-    ) -> None:
+    ) -> tuple[list[float], list[float]]:
         set_seeds(self.seed)
         self.feature_processor = features_processor
 
@@ -266,10 +265,10 @@ class F1RacePredictor:
 
         if self.use_saved_model and os.path.exists(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt"):
             self.load_model()
-            return
+            return train_losses, val_losses
 
         if len(X_train) == 0 or len(y_train) == 0:
-            return
+            return train_losses, val_losses
 
         effective_batch_size = min(self.batch_size, len(X_train))
         if effective_batch_size <= 1:
@@ -371,80 +370,8 @@ class F1RacePredictor:
                 logging.info(f'Early Stop Triggered at Epoch #{epoch + 1}')
                 break
 
-        self._plot_training_history(train_losses, val_losses)
         self.load_model()
-
-    def _plot_training_history(self, train_losses: list[float], val_losses: list[float]) -> None:
-        if not train_losses:
-            logging.warning("No Training History Found - Cannot Plot")
-            return
-
-        plt.style.use('ggplot')
-        fig, ax = plt.subplots(figsize=(12, 7), dpi=100)
-
-        epochs = range(1, len(train_losses) + 1)
-
-        ax.plot(
-            epochs, train_losses,
-            color='#1F77B4', linewidth=2.5, marker='o', markersize=4,
-            markerfacecolor='white', markeredgewidth=1.5,
-            label='Training Loss', alpha=0.9
-        )
-
-        ax.plot(
-            epochs, val_losses,
-            color='#D62728', linewidth=2.5, marker='o', markersize=4,
-            markerfacecolor='white', markeredgewidth=1.5,
-            label='Validation Loss', alpha=0.9
-        )
-
-        ax.fill_between(epochs, train_losses, alpha=0.1, color='#1F77B4')
-        ax.fill_between(epochs, val_losses, alpha=0.1, color='#D62728')
-
-        min_train_loss = min(train_losses)
-        min_train_epoch = epochs[train_losses.index(min_train_loss)]
-        min_val_loss = min(val_losses)
-        min_val_epoch = epochs[val_losses.index(min_val_loss)]
-
-        ax.scatter(min_train_epoch, min_train_loss, color='#1F77B4', s=100, zorder=5)
-        ax.scatter(min_val_epoch, min_val_loss, color='#D62728', s=100, zorder=5)
-
-        yrange = max(max(train_losses), max(val_losses)) - min(min(train_losses), min(val_losses))
-
-        ax.annotate(
-            f'Best Training [Epoch {min_train_epoch}]:\n{min_train_loss:.4f}',
-            xy=(min_train_epoch, min_train_loss), xytext=(min_train_epoch, min_train_loss + yrange * 0.6),
-            arrowprops=dict(facecolor='#1F77B4', edgecolor='#1F77B4', shrink=0.05, width=1.5, headwidth=8, alpha=0.7),
-            horizontalalignment='center', verticalalignment='bottom',
-            fontsize=9, fontweight='bold', color='#1F77B4',
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8, edgecolor='#cccccc')
-        )
-
-        ax.annotate(
-            f'Best Validation [Epoch {min_val_epoch}]:\n{min_val_loss:.4f}',
-            xy=(min_val_epoch, min_val_loss), xytext=(min_val_epoch, min_val_loss + yrange * 0.6),
-            arrowprops=dict(facecolor='#D62728', edgecolor='#D62728', shrink=0.05, width=1.5, headwidth=8, alpha=0.7),
-            horizontalalignment='center',
-            verticalalignment='bottom',
-            fontsize=9, fontweight='bold', color='#D62728',
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8, edgecolor='#cccccc')
-        )
-
-        ax.set_title('Training & Validation Loss', fontsize=16, fontweight='bold', pad=15)
-        ax.set_xlabel('Epoch', fontsize=12, fontweight='bold', labelpad=10)
-        ax.set_ylabel('Loss', fontsize=12, fontweight='bold', labelpad=10)
-
-        ax.grid(axis='y', linestyle='--', alpha=0.5)
-
-        legend = ax.legend(loc='upper right', frameon=True, framealpha=1.0,
-                           edgecolor='gray', fancybox=True, fontsize=10)
-        legend.get_frame().set_facecolor('white')
-
-        os.makedirs(OUT_FOLDER, exist_ok=True)
-        plot_path = f"{OUT_FOLDER}/learning-curve.png"
-        plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-
-        plt.close(fig)
+        return train_losses, val_losses
 
     def predict(
         self,
