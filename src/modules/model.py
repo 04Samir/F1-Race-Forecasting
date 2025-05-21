@@ -379,7 +379,7 @@ class F1RacePredictor:
             logging.warning("No Training History Found - Cannot Plot")
             return
 
-        plt.style.use('seaborn-v0_8-whitegrid')
+        plt.style.use('ggplot')
         fig, ax = plt.subplots(figsize=(12, 7), dpi=100)
 
         epochs = range(1, len(train_losses) + 1)
@@ -412,42 +412,37 @@ class F1RacePredictor:
         yrange = max(max(train_losses), max(val_losses)) - min(min(train_losses), min(val_losses))
 
         ax.annotate(
-            f'Best Training @ Epoch {min_train_epoch}: {min_train_loss:.4f}',
+            f'Best Training [Epoch {min_train_epoch}]:\n{min_train_loss:.4f}',
             xy=(min_train_epoch, min_train_loss), xytext=(min_train_epoch, min_train_loss + yrange * 0.6),
             arrowprops=dict(facecolor='#1F77B4', edgecolor='#1F77B4', shrink=0.05, width=1.5, headwidth=8, alpha=0.7),
             horizontalalignment='center', verticalalignment='bottom',
             fontsize=9, fontweight='bold', color='#1F77B4',
-            bbox=dict(facecolor='white', edgecolor='none', alpha=0.7, pad=1)
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8, edgecolor='#cccccc')
         )
 
         ax.annotate(
-            f'Best Validation @ Epoch {min_val_epoch}: {min_val_loss:.4f}',
+            f'Best Validation [Epoch {min_val_epoch}]:\n{min_val_loss:.4f}',
             xy=(min_val_epoch, min_val_loss), xytext=(min_val_epoch, min_val_loss + yrange * 0.6),
             arrowprops=dict(facecolor='#D62728', edgecolor='#D62728', shrink=0.05, width=1.5, headwidth=8, alpha=0.7),
             horizontalalignment='center',
             verticalalignment='bottom',
             fontsize=9, fontweight='bold', color='#D62728',
-            bbox=dict(facecolor='white', edgecolor='none', alpha=0.7, pad=1)
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8, edgecolor='#cccccc')
         )
 
-        ax.set_title('Training & Validation Loss', fontsize=16, fontweight='bold', pad=20)
-        ax.set_xlabel('Epoch', fontsize=12, labelpad=10)
-        ax.set_ylabel('Loss', fontsize=12, labelpad=10)
+        ax.set_title('Training & Validation Loss', fontsize=16, fontweight='bold', pad=15)
+        ax.set_xlabel('Epoch', fontsize=12, fontweight='bold', labelpad=10)
+        ax.set_ylabel('Loss', fontsize=12, fontweight='bold', labelpad=10)
 
-        ax.grid(True, linestyle='--', alpha=0.7, color='#CCCCCC')
-        ax.legend(loc='upper right', frameon=True, framealpha=0.9, edgecolor='gray', fancybox=True, fontsize=10)
+        ax.grid(axis='y', linestyle='--', alpha=0.5)
 
-        for spine in ax.spines.values():
-            spine.set_visible(True)
-            spine.set_color('#DDDDDD')
-            spine.set_linewidth(0.8)
-
-        fig.tight_layout(pad=3)
+        legend = ax.legend(loc='upper right', frameon=True, framealpha=1.0,
+                           edgecolor='gray', fancybox=True, fontsize=10)
+        legend.get_frame().set_facecolor('white')
 
         os.makedirs(OUT_FOLDER, exist_ok=True)
         plot_path = f"{OUT_FOLDER}/learning-curve.png"
         plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-        logging.info(f"Training History Plot Saved: {plot_path}")
 
         plt.close(fig)
 
@@ -558,7 +553,7 @@ class F1RacePredictor:
 
         uses_batch_norm = any('running_mean' in key for key in saved_state_dict.keys())
 
-        logging.info(f"Loading Saved Model with BatchNorm: {uses_batch_norm}")
+        logging.info(f"Loading Saved Model with BatchNorm -> {uses_batch_norm}")
 
         self.model = DriverAttentionLSTM(
             input_size=input_size,
