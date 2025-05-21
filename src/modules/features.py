@@ -1,3 +1,4 @@
+import logging
 import re
 
 import numpy as np
@@ -587,9 +588,15 @@ class F1FeatureProcessor:
             X_tensor = torch.FloatTensor(np.array(X_sequences))
             y_tensor = torch.FloatTensor(np.array(y_positions))
             weights_tensor = torch.FloatTensor(np.array(sample_weights))
-            return X_tensor, y_tensor, weights_tensor
         else:
-            return torch.FloatTensor(), torch.FloatTensor(), torch.FloatTensor()
+            X_tensor = torch.FloatTensor()
+            y_tensor = torch.FloatTensor()
+            weights_tensor = torch.FloatTensor()
+
+        logging.info(f"Input Sequences Shape: {X_tensor.shape}")
+        logging.info(f"Target Values Shape: {y_tensor.shape}")
+        logging.info(f"Sample Weights Shape: {weights_tensor.shape}")
+        return X_tensor, y_tensor, weights_tensor
 
     def _prepare_test_dataset(
         self,

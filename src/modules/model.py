@@ -256,16 +256,19 @@ class F1RacePredictor:
         X_val: torch.FloatTensor,
         y_val: torch.FloatTensor,
         sample_weights_val: torch.FloatTensor
-    ) -> None:
+    ) -> tuple[list[float], list[float]]:
         set_seeds(self.seed)
         self.feature_processor = features_processor
 
+        train_losses = []
+        val_losses = []
+
         if self.use_saved_model and os.path.exists(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt"):
             self.load_model()
-            return
+            return train_losses, val_losses
 
         if len(X_train) == 0 or len(y_train) == 0:
-            return
+            return train_losses, val_losses
 
         effective_batch_size = min(self.batch_size, len(X_train))
         if effective_batch_size <= 1:
@@ -348,6 +351,9 @@ class F1RacePredictor:
 
             avg_train_loss = train_loss / max(1, batch_count)
             avg_val_loss = val_loss / max(1, val_batch_count)
+            train_losses.append(avg_train_loss)
+            val_losses.append(avg_val_loss)
+
             scheduler.step(avg_val_loss)
 
             if (epoch + 1) % 5 == 0 or epoch < 5:
@@ -365,6 +371,7 @@ class F1RacePredictor:
                 break
 
         self.load_model()
+        return train_losses, val_losses
 
     def predict(
         self,
@@ -463,17 +470,17 @@ class F1RacePredictor:
             logging.error(f"Model File Not Found: {MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt")
             return
 
-        driver_size = len(self.feature_processor.driver_encoder.categories_[0]) # type: ignore
-        constructor_size = len(self.feature_processor.constructor_encoder.categories_[0]) # type: ignore
-        circuit_size = len(self.feature_processor.circuit_encoder.categories_[0]) # type: ignore
-        numerical_size = self.feature_processor.feature_scaler.n_features_in_ # type: ignore
+        driver_size = len(self.feature_processor.driver_encoder.categories_[0])  # type: ignore
+        constructor_size = len(self.feature_processor.constructor_encoder.categories_[0])  # type: ignore
+        circuit_size = len(self.feature_processor.circuit_encoder.categories_[0])  # type: ignore
+        numerical_size = self.feature_processor.feature_scaler.n_features_in_  # type: ignore
         input_size = driver_size + constructor_size + circuit_size + numerical_size
 
         saved_state_dict = torch.load(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt", map_location=self.device)
 
         uses_batch_norm = any('running_mean' in key for key in saved_state_dict.keys())
 
-        logging.info(f"Loading Saved Model with BatchNorm: {uses_batch_norm}")
+        logging.info(f"Loading Saved Model with BatchNorm -> {uses_batch_norm}")
 
         self.model = DriverAttentionLSTM(
             input_size=input_size,

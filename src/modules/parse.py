@@ -284,13 +284,9 @@ def parse_data() -> tuple[tuple[pd.DataFrame, ...], tuple[pd.DataFrame, ...], tu
     test_res.to_csv(TEST_FOLDER / "results.csv", sep=";", index=False, encoding="UTF-8")
     subset(qualifying, test_res).to_csv(TEST_FOLDER / "qualifying.csv", sep=";", index=False, encoding="UTF-8")
 
-    logging.info(
-        "Training Races: %d | Validation Races: %d | Test Race: Season %d, Round %d",
-        train_res[['season', 'round']].drop_duplicates().shape[0],
-        val_res[['season', 'round']].drop_duplicates().shape[0],
-        last_year,
-        last_round,
-    )
+    logging.info(f"Training Races: {train_res[['season', 'round']].drop_duplicates().shape[0]}")
+    logging.info(f"Validation Races: {val_res[['season', 'round']].drop_duplicates().shape[0]}")
+    logging.info(f"Test Race: Season {last_year}, Round {last_round}")
 
     train = (
         pd.read_csv(TRAIN_FOLDER / "circuits.csv", sep=";", encoding="UTF-8"),
