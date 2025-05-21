@@ -69,7 +69,7 @@ def save_metrics(session: tuple[int, int, str], *, metrics: dict[str, float], ta
         os.makedirs(OUT_FOLDER)
 
     season, _round, name = session
-    with open(OUT_FOLDER / f"metrics_{season}_{_round}.txt", "w") as file:
+    with open(OUT_FOLDER / f"eval-metrics.txt", "w") as file:
         file.write(f"Season: {season}, Round: {_round} - {name}\n\n")
         file.write(table + "\n\n")
         file.write(format_evaluation_results(metrics))

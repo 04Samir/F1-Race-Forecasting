@@ -1,6 +1,7 @@
 import logging
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 
@@ -12,7 +13,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from typing import TYPE_CHECKING
 
-from ..utils import MODEL_FOLDER
+from ..utils import MODEL_FOLDER, OUT_FOLDER
 
 if TYPE_CHECKING:
     from .features import F1FeatureProcessor
@@ -260,6 +261,9 @@ class F1RacePredictor:
         set_seeds(self.seed)
         self.feature_processor = features_processor
 
+        train_losses = []
+        val_losses = []
+
         if self.use_saved_model and os.path.exists(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt"):
             self.load_model()
             return
@@ -348,6 +352,9 @@ class F1RacePredictor:
 
             avg_train_loss = train_loss / max(1, batch_count)
             avg_val_loss = val_loss / max(1, val_batch_count)
+            train_losses.append(avg_train_loss)
+            val_losses.append(avg_val_loss)
+
             scheduler.step(avg_val_loss)
 
             if (epoch + 1) % 5 == 0 or epoch < 5:
@@ -364,7 +371,85 @@ class F1RacePredictor:
                 logging.info(f'Early Stop Triggered at Epoch #{epoch + 1}')
                 break
 
+        self._plot_training_history(train_losses, val_losses)
         self.load_model()
+
+    def _plot_training_history(self, train_losses: list[float], val_losses: list[float]) -> None:
+        if not train_losses:
+            logging.warning("No Training History Found - Cannot Plot")
+            return
+
+        plt.style.use('seaborn-v0_8-whitegrid')
+        fig, ax = plt.subplots(figsize=(12, 7), dpi=100)
+
+        epochs = range(1, len(train_losses) + 1)
+
+        ax.plot(
+            epochs, train_losses,
+            color='#1F77B4', linewidth=2.5, marker='o', markersize=4,
+            markerfacecolor='white', markeredgewidth=1.5,
+            label='Training Loss', alpha=0.9
+        )
+
+        ax.plot(
+            epochs, val_losses,
+            color='#D62728', linewidth=2.5, marker='o', markersize=4,
+            markerfacecolor='white', markeredgewidth=1.5,
+            label='Validation Loss', alpha=0.9
+        )
+
+        ax.fill_between(epochs, train_losses, alpha=0.1, color='#1F77B4')
+        ax.fill_between(epochs, val_losses, alpha=0.1, color='#D62728')
+
+        min_train_loss = min(train_losses)
+        min_train_epoch = epochs[train_losses.index(min_train_loss)]
+        min_val_loss = min(val_losses)
+        min_val_epoch = epochs[val_losses.index(min_val_loss)]
+
+        ax.scatter(min_train_epoch, min_train_loss, color='#1F77B4', s=100, zorder=5)
+        ax.scatter(min_val_epoch, min_val_loss, color='#D62728', s=100, zorder=5)
+
+        yrange = max(max(train_losses), max(val_losses)) - min(min(train_losses), min(val_losses))
+
+        ax.annotate(
+            f'Best Training @ Epoch {min_train_epoch}: {min_train_loss:.4f}',
+            xy=(min_train_epoch, min_train_loss), xytext=(min_train_epoch, min_train_loss + yrange * 0.6),
+            arrowprops=dict(facecolor='#1F77B4', edgecolor='#1F77B4', shrink=0.05, width=1.5, headwidth=8, alpha=0.7),
+            horizontalalignment='center', verticalalignment='bottom',
+            fontsize=9, fontweight='bold', color='#1F77B4',
+            bbox=dict(facecolor='white', edgecolor='none', alpha=0.7, pad=1)
+        )
+
+        ax.annotate(
+            f'Best Validation @ Epoch {min_val_epoch}: {min_val_loss:.4f}',
+            xy=(min_val_epoch, min_val_loss), xytext=(min_val_epoch, min_val_loss + yrange * 0.6),
+            arrowprops=dict(facecolor='#D62728', edgecolor='#D62728', shrink=0.05, width=1.5, headwidth=8, alpha=0.7),
+            horizontalalignment='center',
+            verticalalignment='bottom',
+            fontsize=9, fontweight='bold', color='#D62728',
+            bbox=dict(facecolor='white', edgecolor='none', alpha=0.7, pad=1)
+        )
+
+        ax.set_title('Training & Validation Loss', fontsize=16, fontweight='bold', pad=20)
+        ax.set_xlabel('Epoch', fontsize=12, labelpad=10)
+        ax.set_ylabel('Loss', fontsize=12, labelpad=10)
+
+        ax.grid(True, linestyle='--', alpha=0.7, color='#CCCCCC')
+        ax.legend(loc='upper right', frameon=True, framealpha=0.9, edgecolor='gray', fancybox=True, fontsize=10)
+
+        for spine in ax.spines.values():
+            spine.set_visible(True)
+            spine.set_color('#DDDDDD')
+            spine.set_linewidth(0.8)
+
+        fig.tight_layout(pad=3)
+
+        os.makedirs(OUT_FOLDER, exist_ok=True)
+        plot_path = f"{OUT_FOLDER}/learning-curve.png"
+        plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+        logging.info(f"Training History Plot Saved: {plot_path}")
+
+        plt.close(fig)
 
     def predict(
         self,
@@ -463,10 +548,10 @@ class F1RacePredictor:
             logging.error(f"Model File Not Found: {MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt")
             return
 
-        driver_size = len(self.feature_processor.driver_encoder.categories_[0]) # type: ignore
-        constructor_size = len(self.feature_processor.constructor_encoder.categories_[0]) # type: ignore
-        circuit_size = len(self.feature_processor.circuit_encoder.categories_[0]) # type: ignore
-        numerical_size = self.feature_processor.feature_scaler.n_features_in_ # type: ignore
+        driver_size = len(self.feature_processor.driver_encoder.categories_[0])  # type: ignore
+        constructor_size = len(self.feature_processor.constructor_encoder.categories_[0])  # type: ignore
+        circuit_size = len(self.feature_processor.circuit_encoder.categories_[0])  # type: ignore
+        numerical_size = self.feature_processor.feature_scaler.n_features_in_  # type: ignore
         input_size = driver_size + constructor_size + circuit_size + numerical_size
 
         saved_state_dict = torch.load(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt", map_location=self.device)
