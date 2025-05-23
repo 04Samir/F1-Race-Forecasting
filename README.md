@@ -20,6 +20,57 @@
 
 ---
 
+## Key Features
+
+### 🏎️ Advanced Predictive Capabilities
+- **Race Position Forecasting**: Predicts Final Race Positions for All Drivers
+- **Multi-Factor Analysis**: Considers 30+ Engineered Features Including Driver Form, Constructor Performance, and Circuit-Specific History
+- **Temporal Awareness**: Weights Recent Performances More Heavily Using Exponential Decay
+- **Domain-Specific Adjustments**: Incorporates F1-Specific Knowledge Like Top-Tier Driver Expectations and Grid Position Influence
+
+### 📊 Comprehensive Data Pipeline
+- **Automated Data Collection**: Fetches Latest Race Data from the Ergast F1 API
+- **Intelligent Feature Engineering**: Transforms Raw Timing Data into Meaningful Predictive Features
+- **Historical Analysis**: Processes Lap Times, Pit Stops, Qualifying Sessions, and Race Results
+
+### 🎯 Performance Metrics
+- **Spearman Correlation**: Measures Ranking Accuracy
+- **Position Accuracy**: Tracks Exact Position Predictions
+- **Podium & Top-5 Accuracy**: Specialised Metrics for Race-Critical Positions
+
+---
+
+## How It Works
+
+### 1. **Data Acquisition**
+The System Fetches Comprehensive Formula 1 Data Including:
+- Race Results and Qualifying Times
+- Driver and Constructor Information
+- Circuit Characteristics
+- Lap-by-Lap Timing Data
+- Pit Stop Strategies
+
+### 2. **Feature Engineering**
+Raw Data is Transformed into Predictive Features:
+- **Driver Metrics**: Age, Experience, Recent Form (3/5/10 Race Averages)
+- **Performance Indicators**: Qualifying Deltas, Position Momentum, Consistency Scores
+- **Constructor Analysis**: Team Performance Trends and Circuit-Specific History
+- **Strategic Elements**: Pit Stop Patterns and Race Pace Analysis
+
+### 3. **Model Training**
+A Bidirectional LSTM with Attention Mechanism Learns Complex Patterns:
+- Sequences of 5 Races Capture Driver Momentum
+- Attention Layers Focus on Most Relevant Historical Performances
+- Custom Loss Functions Optimise for Racing Position Prediction
+
+### 4. **Prediction & Adjustment**
+The Model Generates Predictions with Domain-Specific Refinements:
+- Top-Tier Drivers Receive Appropriate Position Boundaries
+- Grid Position Influence is Weighted Based on Starting Position
+- Historical Driver Performance Ranges Guide Final Adjustments
+
+---
+
 ## Tech-Stack
 
 **Formula 1 Race Forecasting** is Built with the Following Technologies:
@@ -76,6 +127,12 @@ python main.py 2  # Parse the RAW Data
 python main.py 3  # Predict Race Results
 python main.py 4  # Exit
 ```
+
+### Typical Workflow
+
+1. **First Run**: Execute Options 1 and 2 to Fetch and Parse Historical Data
+2. **Training**: Option 3 Will Train the Model on Historical Data (First Run Only)
+3. **Predictions**: Subsequent Runs of Option 3 Use the Trained Model for Instant Predictions
 
 ---
 
