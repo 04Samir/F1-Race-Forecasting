@@ -16,15 +16,15 @@ def run(choice: int | None = None) -> None:
     start(choice)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="F1 Race Forecasting"
+        description='F1 Race Forecasting'
     )
     parser.add_argument(
-        "choice",
-        nargs="?",
+        'choice',
+        nargs='?',
         type=int,
-        help="Menu Options: 1=Fetch, 2=Parse, 3=Predict, 4=Exit"
+        help='Menu Options: 1=Fetch, 2=Parse, 3=Predict, 4=Exit'
     )
     args = parser.parse_args()
 

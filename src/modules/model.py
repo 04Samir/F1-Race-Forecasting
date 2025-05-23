@@ -37,8 +37,8 @@ class F1Dataset(Dataset):
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         if self.sample_weights is not None:
-            return {"X": self.X[idx], "y": self.y[idx], "weight": self.sample_weights[idx]}
-        return {"X": self.X[idx], "y": self.y[idx]}
+            return {'X': self.X[idx], 'y': self.y[idx], 'weight': self.sample_weights[idx]}
+        return {'X': self.X[idx], 'y': self.y[idx]}
 
 
 class DriverAttentionLSTM(nn.Module):
@@ -46,9 +46,9 @@ class DriverAttentionLSTM(nn.Module):
         super().__init__()
 
         if input_size <= 0:
-            raise ValueError(f"Input Size MUST be POSITIVE, got {input_size}")
+            raise ValueError(f'Input Size MUST be POSITIVE, got {input_size}')
         if hidden_size <= 0:
-            raise ValueError(f"Hidden Size MUST be POSITIVE, got {hidden_size}")
+            raise ValueError(f'Hidden Size MUST be POSITIVE, got {hidden_size}')
 
         self.hidden_size = hidden_size
         self.num_layers = num_layers
@@ -227,7 +227,7 @@ class CombinedRaceLoss(nn.Module):
 
 class F1RacePredictor:
 
-    MODEL_NAME = "F1_Model"
+    MODEL_NAME = 'F1_Model'
 
     def __init__(self, use_saved_model: bool = True, seed: int = 42) -> None:
         self.use_saved_model = use_saved_model
@@ -263,7 +263,7 @@ class F1RacePredictor:
         train_losses = []
         val_losses = []
 
-        if self.use_saved_model and os.path.exists(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt"):
+        if self.use_saved_model and os.path.exists(f'{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt'):
             self.load_model()
             return train_losses, val_losses
 
@@ -272,7 +272,7 @@ class F1RacePredictor:
 
         effective_batch_size = min(self.batch_size, len(X_train))
         if effective_batch_size <= 1:
-            logging.warning(f"Only {len(X_train)} Training Samples Available - Using Group Norm Instead of Batch Norm")
+            logging.warning(f'Only {len(X_train)} Training Samples Available - Using Group Norm Instead of Batch Norm')
 
             effective_batch_size = 1
 
@@ -310,9 +310,9 @@ class F1RacePredictor:
             batch_count = 0
 
             for batch in train_loader:
-                batch_X = batch["X"].to(self.device)
-                batch_y = batch["y"].to(self.device).view(-1, 1)
-                batch_weights = batch["weight"].to(self.device).view(-1, 1)
+                batch_X = batch['X'].to(self.device)
+                batch_y = batch['y'].to(self.device).view(-1, 1)
+                batch_weights = batch['weight'].to(self.device).view(-1, 1)
 
                 optimizer.zero_grad()
                 outputs = self.model(batch_X)
@@ -335,9 +335,9 @@ class F1RacePredictor:
             val_batch_count = 0
             with torch.no_grad():
                 for batch in val_loader:
-                    batch_X = batch["X"].to(self.device)
-                    batch_y = batch["y"].to(self.device).view(-1, 1)
-                    batch_weights = batch["weight"].to(self.device).view(-1, 1)
+                    batch_X = batch['X'].to(self.device)
+                    batch_y = batch['y'].to(self.device).view(-1, 1)
+                    batch_weights = batch['weight'].to(self.device).view(-1, 1)
 
                     outputs = self.model(batch_X)
 
@@ -382,10 +382,10 @@ class F1RacePredictor:
         set_seeds(self.seed)
 
         if self.model is None:
-            raise ValueError("Model Not Trained - Cannot Predict")
+            raise ValueError('Model Not Trained - Cannot Predict')
 
         if len(X_test) == 0:
-            raise ValueError("No Valid Test Data Found for Prediction")
+            raise ValueError('No Valid Test Data Found for Prediction')
 
         self.model.eval()
         with torch.no_grad():
@@ -460,14 +460,14 @@ class F1RacePredictor:
         return adjusted_positions
 
     def save_model(self) -> None:
-        assert self.model is not None, "Model NOT Trained - Cannot Save"
-        torch.save(self.model.state_dict(), f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt")
+        assert self.model is not None, 'Model NOT Trained - Cannot Save'
+        torch.save(self.model.state_dict(), f'{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt')
 
     def load_model(self) -> None:
-        assert self.feature_processor is not None, "Feature Processor MUST be Set Before Loading Model"
+        assert self.feature_processor is not None, 'Feature Processor MUST be Set Before Loading Model'
 
-        if not os.path.exists(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt"):
-            logging.error(f"Model File Not Found: {MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt")
+        if not os.path.exists(f'{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt'):
+            logging.error(f'Model File Not Found: {MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt')
             return
 
         driver_size = len(self.feature_processor.driver_encoder.categories_[0])  # type: ignore
@@ -476,11 +476,11 @@ class F1RacePredictor:
         numerical_size = self.feature_processor.feature_scaler.n_features_in_  # type: ignore
         input_size = driver_size + constructor_size + circuit_size + numerical_size
 
-        saved_state_dict = torch.load(f"{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt", map_location=self.device)
+        saved_state_dict = torch.load(f'{MODEL_FOLDER}/{F1RacePredictor.MODEL_NAME}.pt', map_location=self.device)
 
         uses_batch_norm = any('running_mean' in key for key in saved_state_dict.keys())
 
-        logging.info(f"Loading Saved Model with BatchNorm -> {uses_batch_norm}")
+        logging.info(f'Loading Saved Model with BatchNorm -> {uses_batch_norm}')
 
         self.model = DriverAttentionLSTM(
             input_size=input_size,
@@ -496,9 +496,9 @@ class F1RacePredictor:
 
             try:
                 self.model.load_state_dict(filtered_state_dict, strict=False)
-                logging.info("Successfully Loaded Model with Filtered State Dict")
+                logging.info('Successfully Loaded Model with Filtered State Dict')
             except Exception as E:
-                logging.error(f"Error Loading Model with Filtered State Dict:", exc_info=E)
+                logging.error(f'Error Loading Model with Filtered State Dict:', exc_info=E)
 
                 self.model = DriverAttentionLSTM(
                     input_size=input_size,
@@ -509,7 +509,7 @@ class F1RacePredictor:
                     use_batch_norm=True
                 ).to(self.device)
                 self.model.load_state_dict(saved_state_dict)
-                logging.info("Fallback to Original Model with BatchNorm")
+                logging.info('Fallback to Original Model with BatchNorm')
         else:
             self.model.load_state_dict(saved_state_dict)
 

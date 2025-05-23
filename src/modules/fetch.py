@@ -23,12 +23,12 @@ if proxies_file.exists():
 
 
 def write_to_file(data: dict[Any, Any], filename: str) -> None:
-    with open(filename, "w") as f:
+    with open(filename, 'w') as f:
         json.dump(data, f, indent=4)
 
 
 def read_from_file(file_path: str) -> dict[Any, Any]:
-    with open(file_path, "r") as file:
+    with open(file_path, 'r') as file:
         return json.load(file)
 
 
@@ -43,7 +43,7 @@ def fetch(session: requests.Session, *args: Any, **kwargs: Any) -> list[dict[str
     while True:
         if USE_PROXIES:
             if CURRENT_PROXY in INVALID_PROXIES:
-                raise Exception("Tried All Proxies - Exiting . . .")
+                raise Exception('Tried All Proxies - Exiting . . .')
 
             proxy = {
                 'http': f'http://{CURRENT_PROXY}',
@@ -59,9 +59,9 @@ def fetch(session: requests.Session, *args: Any, **kwargs: Any) -> list[dict[str
             else:
                 response = session.get(*args, **kwargs, timeout=5)
         except (requests.exceptions.ProxyError, requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            logging.warning(f"Connection Error: {CURRENT_PROXY}")
+            logging.warning(f'Connection Error: {CURRENT_PROXY}')
             if USE_PROXIES and CURRENT_PROXY is not None:
-                logging.warning(f"Proxy Error: {CURRENT_PROXY}")
+                logging.warning(f'Proxy Error: {CURRENT_PROXY}')
                 INVALID_PROXIES.add(CURRENT_PROXY)
                 CURRENT_PROXY = next(PROXIES)
                 continue
@@ -71,9 +71,9 @@ def fetch(session: requests.Session, *args: Any, **kwargs: Any) -> list[dict[str
         if response.status_code == 200:
             result = response.json()
 
-            if "RaceTable" in result['MRData']:
+            if 'RaceTable' in result['MRData']:
                 data.extend(result['MRData']['RaceTable']['Races'])
-            elif "DriverTable" in result['MRData']:
+            elif 'DriverTable' in result['MRData']:
                 data.extend(result['MRData']['DriverTable']['Drivers'])
             else:
                 break
@@ -86,47 +86,47 @@ def fetch(session: requests.Session, *args: Any, **kwargs: Any) -> list[dict[str
             if USE_PROXIES:
                 CURRENT_PROXY = next(PROXIES)
             else:
-                raise Exception("Rate Limit Exceeded - Not Using Proxies.")
+                raise Exception('Rate Limit Exceeded - Not Using Proxies.')
         elif response.status_code == 407:
             if USE_PROXIES and CURRENT_PROXY is not None:
-                logging.warning(f"Proxy Authentication Error: {CURRENT_PROXY}")
+                logging.warning(f'Proxy Authentication Error: {CURRENT_PROXY}')
                 INVALID_PROXIES.add(CURRENT_PROXY)
                 CURRENT_PROXY = next(PROXIES)
                 continue
             else:
-                raise Exception("Proxy Authentication Error - Not Using Proxies.")
+                raise Exception('Proxy Authentication Error - Not Using Proxies.')
         else:
-            raise Exception(f"Failed to Fetch Data [{response.status_code}]: {response.text}")
+            raise Exception(f'Failed to Fetch Data [{response.status_code}]: {response.text}')
 
     return data
 
 
 def fetch_drivers(session: requests.Session, *, year: int) -> dict[str, Any]:
-    data = fetch(session, f"{API_URL}/{year}/drivers")
+    data = fetch(session, f'{API_URL}/{year}/drivers')
     return {'drivers': data}
 
 
 def fetch_qualifying(session: requests.Session, *, year: int) -> dict[str, Any]:
-    data = fetch(session, f"{API_URL}/{year}/qualifying")
+    data = fetch(session, f'{API_URL}/{year}/qualifying')
     return {'qualifying': data}
 
 
 def fetch_results(session: requests.Session, *, year: int) -> dict[str, Any]:
-    data = fetch(session, f"{API_URL}/{year}/results")
+    data = fetch(session, f'{API_URL}/{year}/results')
     return {'results': data}
 
 
 def fetch_laps(session: requests.Session, *, year: int, race: int) -> dict[str, Any]:
-    data = fetch(session, f"{API_URL}/{year}/{race}/laps")
+    data = fetch(session, f'{API_URL}/{year}/{race}/laps')
     return {'laps': data}
 
 
 def fetch_pitstops(session: requests.Session, *, year: int, race: int) -> dict[str, Any]:
-    data = fetch(session, f"{API_URL}/{year}/{race}/pitstops")
+    data = fetch(session, f'{API_URL}/{year}/{race}/pitstops')
     return {'pitStops': data}
 
 def fetch_data() -> None:
-    logging.info("Fetching Data . . .")
+    logging.info('Fetching Data . . .')
     os.makedirs(BIN_FOLDER, exist_ok=True)
 
     headers = {'Content-Type': 'application/json'}
@@ -140,12 +140,12 @@ def fetch_data() -> None:
         if not os.path.exists(BIN_YEAR_FOLDER / 'drivers.json'):
             drivers = fetch_drivers(session, year=year)
             write_to_file(drivers, str(BIN_YEAR_FOLDER / 'drivers.json'))
-        logging.info(f"- Fetched Driver Data for {year}")
+        logging.info(f'- Fetched Driver Data for {year}')
 
         if not os.path.exists(BIN_YEAR_FOLDER / 'qualifying.json'):
             qualifying = fetch_qualifying(session, year=year)
             write_to_file(qualifying, str(BIN_YEAR_FOLDER / 'qualifying.json'))
-        logging.info(f"- Fetched Qualifying Data for {year}")
+        logging.info(f'- Fetched Qualifying Data for {year}')
 
         if not os.path.exists(BIN_YEAR_FOLDER / 'results.json'):
             results = fetch_results(session, year=year)
@@ -163,8 +163,8 @@ def fetch_data() -> None:
                     data[race].update(pitstops)
 
                 write_to_file(data, str(BIN_YEAR_FOLDER / 'laps_pitstops.json'))
-            logging.info(f"- Fetched Laps & Pitstops Data for {year}")
+            logging.info(f'- Fetched Laps & Pitstops Data for {year}')
 
-        logging.info(f"- Fetched Results Data for {year}")
+        logging.info(f'- Fetched Results Data for {year}')
 
-        logging.info(f"Data Successfully Fetched for {year}!\n")
+        logging.info(f'Data Successfully Fetched for {year}!\n')

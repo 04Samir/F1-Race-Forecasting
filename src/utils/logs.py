@@ -14,10 +14,10 @@ class ColourFormatter(logging.Formatter):
 
     FORMATS = {
         level: logging.Formatter(
-            u"{}".format(
-                f"%(asctime)s {colour}|{colorama.Fore.WHITE} [ {colour}%(levelname)s {colorama.Fore.WHITE}] {colour}=> {colorama.Fore.WHITE}%(message)s{colorama.Fore.RESET}",
+            u'{}'.format(
+                f'%(asctime)s {colour}|{colorama.Fore.WHITE} [ {colour}%(levelname)s {colorama.Fore.WHITE}] {colour}=> {colorama.Fore.WHITE}%(message)s{colorama.Fore.RESET}',
             ),
-            datefmt=f"{colorama.Fore.WHITE}%d-%m-%Y {colour}| {colorama.Fore.WHITE}%H:%M:%S{colorama.Fore.RESET}",
+            datefmt=f'{colorama.Fore.WHITE}%d-%m-%Y {colour}| {colorama.Fore.WHITE}%H:%M:%S{colorama.Fore.RESET}',
         )
         for level, colour in LEVEL_COLOURS
     }
@@ -29,7 +29,7 @@ class ColourFormatter(logging.Formatter):
 
         if record.exc_info:
             text = formatter.formatException(record.exc_info)
-            record.exc_text = f"{colorama.Fore.RED}{text}{colorama.Fore.RESET}\n"
+            record.exc_text = f'{colorama.Fore.RED}{text}{colorama.Fore.RESET}\n'
 
         output = formatter.format(record)
 

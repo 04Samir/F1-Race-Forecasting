@@ -31,7 +31,7 @@ def convert_qualifying_time(time_str: str) -> float:
         return 0.0
 
     try:
-        parts = time_str.split(":")
+        parts = time_str.split(':')
         if len(parts) == 2:
             minutes, seconds = parts
             return int(minutes) * 60 + float(seconds)
@@ -593,9 +593,9 @@ class F1FeatureProcessor:
             y_tensor = torch.FloatTensor()
             weights_tensor = torch.FloatTensor()
 
-        logging.info(f"Input Sequences Shape: {X_tensor.shape}")
-        logging.info(f"Target Values Shape: {y_tensor.shape}")
-        logging.info(f"Sample Weights Shape: {weights_tensor.shape}")
+        logging.info(f'Input Sequences Shape: {X_tensor.shape}')
+        logging.info(f'Target Values Shape: {y_tensor.shape}')
+        logging.info(f'Sample Weights Shape: {weights_tensor.shape}')
         return X_tensor, y_tensor, weights_tensor
 
     def _prepare_test_dataset(
@@ -614,7 +614,7 @@ class F1FeatureProcessor:
         race_circuit = circuits_df[(circuits_df['season'] == test_season) & (circuits_df['round'] == test_round)]
 
         if race_qualifying.empty or race_circuit.empty:
-            raise ValueError(f"No Qualifying or Circuit Data Found for Season {test_season}, Round {test_round}")
+            raise ValueError(f'No Qualifying or Circuit Data Found for Season {test_season}, Round {test_round}')
 
         test_data = []
         for _, quali_row in race_qualifying.iterrows():
@@ -664,7 +664,7 @@ class F1FeatureProcessor:
         test_df = pd.DataFrame(test_data)
 
         if test_df.empty:
-            raise ValueError(f"Could NOT Create Test Data for Season {test_season}, Round {test_round}")
+            raise ValueError(f'Could NOT Create Test Data for Season {test_season}, Round {test_round}')
 
         test_features, position_boundaries, top_drivers, mid_tier_drivers = engineer_features(
             results_df=results_train_df,
@@ -788,11 +788,11 @@ class F1FeatureProcessor:
             else:
                 driver_features = driver_features.tail(self.sequence_length)
 
-            assert self.driver_encoder is not None, "Driver Encoder NOT Initialised"
-            assert self.constructor_encoder is not None, "Constructor Encoder NOT Initialised"
-            assert self.circuit_encoder is not None, "Circuit Encoder NOT Initialised"
-            assert self.feature_scaler is not None, "Feature Scaler NOT Initialised"
-            assert len(self.features_used_in_fitting) > 0, "Features NOT Fitted"
+            assert self.driver_encoder is not None, 'Driver Encoder NOT Initialised'
+            assert self.constructor_encoder is not None, 'Constructor Encoder NOT Initialised'
+            assert self.circuit_encoder is not None, 'Circuit Encoder NOT Initialised'
+            assert self.feature_scaler is not None, 'Feature Scaler NOT Initialised'
+            assert len(self.features_used_in_fitting) > 0, 'Features NOT Fitted'
 
             driver_encoded = self.driver_encoder.transform(driver_features[['driver_id']])
             constructor_encoded = self.constructor_encoder.transform(driver_features[['constructor_id']])

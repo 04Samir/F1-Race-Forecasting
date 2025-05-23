@@ -13,7 +13,7 @@ from ..utils import OUT_FOLDER
 
 def plot_training_history(train_losses: list[float], val_losses: list[float]) -> None:
     if not train_losses:
-        logging.warning("No Training History Found - Cannot Plot")
+        logging.warning('No Training History Found - Cannot Plot')
         return
 
     plt.style.use('ggplot')
@@ -78,7 +78,7 @@ def plot_training_history(train_losses: list[float], val_losses: list[float]) ->
     legend.get_frame().set_facecolor('white')
 
     os.makedirs(OUT_FOLDER, exist_ok=True)
-    plot_path = f"{OUT_FOLDER}/learning-curve.png"
+    plot_path = f'{OUT_FOLDER}/learning-curve.png'
     plt.savefig(plot_path, dpi=300, bbox_inches='tight')
 
     plt.close(fig)
@@ -109,7 +109,7 @@ def plot_position_comparison(
 
     predicted_colors = []
     for team in constructors:
-        base_color = np.array(color_map[team])
+        base_color = np.array(color_map[team], dtype=float)
         lighter_color = 0.7 * base_color + 0.3 * np.array([1, 1, 1, 1])
         predicted_colors.append(lighter_color)
 
@@ -151,7 +151,7 @@ def plot_position_comparison(
     ax.set_yticks(np.arange(1, max_pos + 1))
 
     season, round_num, race_name = race_info
-    title = f"{race_name} (Season {season}, Round {round_num}): Position Comparison"
+    title = f'{race_name} (Season {season}, Round {round_num}): Position Comparison'
 
     ax.set_title(title, fontsize=18, fontweight='bold', pad=20)
 
@@ -164,7 +164,7 @@ def plot_position_comparison(
                 f'{pos}',
                 xy=(bar.get_x() + bar.get_width() / 2, pos),
                 xytext=(0, -12),
-                textcoords="offset points",
+                textcoords='offset points',
                 ha='center', va='center',
                 fontsize=9, fontweight='bold',
                 color='white',
@@ -188,7 +188,7 @@ def plot_position_comparison(
         handles=[actual_patch, predicted_patch],
         loc='upper left',
         bbox_to_anchor=(1.01, 1),
-        title="Position Type",
+        title='Position Type',
         title_fontsize=11,
         **legend_params
     )
@@ -204,7 +204,7 @@ def plot_position_comparison(
         labels=unique_constructors,
         loc='upper left',
         bbox_to_anchor=(1.01, 0.85),
-        title="Constructors",
+        title='Constructors',
         title_fontsize=11,
         **legend_params
     )
@@ -218,10 +218,10 @@ def plot_position_comparison(
 
     plt.subplots_adjust(right=0.82)
 
-    filepath = os.path.join(OUT_FOLDER, "forecast-comparison.png")
+    filepath = os.path.join(OUT_FOLDER, 'forecast-comparison.png')
     os.makedirs(OUT_FOLDER, exist_ok=True)
     fig.savefig(filepath, dpi=300, bbox_inches='tight')
-    logging.info(f"Saved Position Comparison Chart -> {filepath}")
+    logging.info(f'Saved Position Comparison Chart -> {filepath}')
 
     plt.close(fig)
     return fig
@@ -259,14 +259,14 @@ def plot_evaluation_metrics(
             f'{height:.2f}',
             xy=(bar.get_x() + bar.get_width() / 2, height),
             xytext=(0, 3),
-            textcoords="offset points",
+            textcoords='offset points',
             ha='center', va='bottom', fontsize=11, fontweight='bold'
         )
 
     ax.axhline(1.0, color='#555555', linestyle='--', alpha=0.6, linewidth=1)
 
     season, round_num, race_name = race_info
-    title = f"{race_name} (Season {season}, Round {round_num}): Model Performance"
+    title = f'{race_name} (Season {season}, Round {round_num}): Model Performance'
 
     ax.set_title(title, fontsize=16, fontweight='bold', pad=15)
     ax.set_ylim(0, 1.05)
@@ -275,10 +275,10 @@ def plot_evaluation_metrics(
 
     ax.grid(axis='y', linestyle='--', alpha=0.5)
 
-    filepath = os.path.join(OUT_FOLDER, "eval-metrics.png")
+    filepath = os.path.join(OUT_FOLDER, 'eval-metrics.png')
     os.makedirs(OUT_FOLDER, exist_ok=True)
     fig.savefig(filepath, dpi=300, bbox_inches='tight')
-    logging.info(f"Saved Evaluation Metrics Chart -> {filepath}")
+    logging.info(f'Saved Evaluation Metrics Chart -> {filepath}')
 
     plt.close(fig)
     return fig

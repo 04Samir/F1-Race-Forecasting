@@ -20,10 +20,11 @@ from .modules import (
 
 warnings.filterwarnings('ignore', category=RuntimeWarning, message='Mean of empty slice')
 
+
 def predict_race() -> None:
     set_seeds(42)
 
-    logging.info("Parsing Data . . .")
+    logging.info('Parsing Data . . .')
     train_data, val_data, test_data = parse_data()
 
     circuits_train, constructors_train, drivers_train, laps_train, pitstops_train, qualifying_train, results_train = train_data
@@ -32,11 +33,11 @@ def predict_race() -> None:
 
     test_season = int(qualifying_test['season'].iloc[0])
     test_round = int(qualifying_test['round'].iloc[0])
-    logging.info("Data Parsed Successfully!")
+    logging.info('Data Parsed Successfully!')
 
-    logging.info("")
+    logging.info('')
 
-    logging.info(f"Engineering Training Features . . .")
+    logging.info(f'Engineering Training Features . . .')
     train_features, train_position_boundaries, train_top_drivers, train_mid_tier_drivers = engineer_features(
         results_df=results_train,
         qualifying_df=qualifying_train,
@@ -53,11 +54,11 @@ def predict_race() -> None:
     feature_processor.mid_tier_drivers = train_mid_tier_drivers
 
     X_train, y_train, sample_weights_train = feature_processor.fit_transform(train_features)
-    logging.info(f"Training Features Engineered Successfully!")
+    logging.info(f'Training Features Engineered Successfully!')
 
-    logging.info("")
+    logging.info('')
 
-    logging.info(f"Engineering Validation Features . . .")
+    logging.info(f'Engineering Validation Features . . .')
     val_features, val_position_boundaries, val_top_drivers, val_mid_tier_drivers = engineer_features(
         results_df=results_val,
         qualifying_df=qualifying_val,
@@ -69,9 +70,9 @@ def predict_race() -> None:
     )
 
     X_val, y_val, sample_weights_val = feature_processor.transform(val_features)
-    logging.info(f"Validation Features Engineered Successfully!")
+    logging.info(f'Validation Features Engineered Successfully!')
 
-    logging.info("")
+    logging.info('')
 
     all_drivers_df = pd.concat([drivers_train, drivers_val], ignore_index=True)
     all_constructors_df = pd.concat([constructors_train, constructors_val], ignore_index=True)
@@ -81,7 +82,7 @@ def predict_race() -> None:
     all_results_df = pd.concat([results_train, results_val], ignore_index=True)
     all_qualifying_df = pd.concat([qualifying_train, qualifying_val], ignore_index=True)
 
-    logging.info(f"Combining Domain Knowledge from Training & Validation Sets . . .")
+    logging.info(f'Combining Domain Knowledge from Training & Validation Sets . . .')
     train_knowledge = (train_position_boundaries, train_top_drivers, train_mid_tier_drivers)
     val_knowledge = (val_position_boundaries, val_top_drivers, val_mid_tier_drivers)
 
@@ -96,14 +97,14 @@ def predict_race() -> None:
     feature_processor.top_drivers = combined_top_drivers
     feature_processor.mid_tier_drivers = combined_mid_tier_drivers
 
-    logging.info(f"Position Boundaries Updated with Combined Knowledge: {len(combined_position_boundaries)} Drivers")
-    logging.info(f"Top Drivers Updated: {', '.join([(driver.replace("_", " ")).title() for driver in combined_top_drivers])}")
-    logging.info(f"Mid-Tier Drivers Updated: {', '.join([(driver.replace("_", " ")).title() for driver in combined_mid_tier_drivers])}")
-    logging.info(f"Domain Knowledge Combined Successfully!")
+    logging.info(f'Position Boundaries Updated with Combined Knowledge: {len(combined_position_boundaries)} Drivers')
+    logging.info(f'Top Drivers Updated: {', '.join([(driver.replace('_', ' ')).title() for driver in combined_top_drivers])}')
+    logging.info(f'Mid-Tier Drivers Updated: {', '.join([(driver.replace('_', ' ')).title() for driver in combined_mid_tier_drivers])}')
+    logging.info(f'Domain Knowledge Combined Successfully!')
 
-    logging.info("")
+    logging.info('')
 
-    logging.info("Training Model . . .")
+    logging.info('Training Model . . .')
     predictor = F1RacePredictor(use_saved_model=False)
     train_losses, val_losses = predictor.train(
         feature_processor,
@@ -111,11 +112,11 @@ def predict_race() -> None:
         X_val, y_val, sample_weights_val
     )
     plot_training_history(train_losses, val_losses)
-    logging.info("Model Trained Successfully!")
+    logging.info('Model Trained Successfully!')
 
-    logging.info("")
+    logging.info('')
 
-    logging.info(f"Preparing Test Data for Forecast -> {test_season} Season, Round {test_round} . . .")
+    logging.info(f'Preparing Test Data for Forecast -> {test_season} Season, Round {test_round} . . .')
     X_test, test_drivers, qualifying_results = feature_processor.transform_test_data(
         qualifying_df=pd.concat([qualifying_test, all_qualifying_df], ignore_index=True),
         drivers_df=all_drivers_df,
@@ -127,11 +128,11 @@ def predict_race() -> None:
         test_season=test_season,
         test_round=test_round
     )
-    logging.info(f"Test Data Prepared Successfully!")
+    logging.info(f'Test Data Prepared Successfully!')
 
-    logging.info("")
+    logging.info('')
 
-    logging.info("Generating Predictions . . .")
+    logging.info('Generating Predictions . . .')
     raw_predictions, adjusted_predictions = predictor.predict(
         X_test, test_drivers, qualifying_results
     )
@@ -158,7 +159,7 @@ def predict_race() -> None:
     predictions_df = predictions_df.sort_values('final_position')
 
     race_info = all_circuits_df[(all_circuits_df['season'] == test_season) & (all_circuits_df['round'] == test_round)]
-    race_name = race_info['race_name'].iloc[0] if not race_info.empty else f"Race {test_round}"
+    race_name = race_info['race_name'].iloc[0] if not race_info.empty else f'Race {test_round}'
 
     display_df = predictions_df[['driver_name', 'constructor', 'final_position']].copy()
     display_df['final_position'] = display_df['final_position'].astype(int)
@@ -193,7 +194,7 @@ def predict_race() -> None:
 
         display_df = display_with_qualifying[['driver_name', 'constructor', 'qualifying_result', 'final_position', 'actual_position']]
         display_df['diff'] = display_df['final_position'] - display_df['actual_position']
-        display_df['diff'] = display_df['diff'].apply(lambda x: f"+{x}" if pd.notnull(x) and x > 0 else str(x) if pd.notnull(x) else "N/A")
+        display_df['diff'] = display_df['diff'].apply(lambda x: f'+{x}' if pd.notnull(x) and x > 0 else str(x) if pd.notnull(x) else 'N/A')
         display_df.columns = ['Driver', 'Constructor', 'Qualifying Result', 'Predicted Position', 'Actual Position', 'Difference']
         display_df = display_df[['Driver', 'Constructor', 'Actual Position', 'Predicted Position', 'Difference', 'Qualifying Result']]
         display_df = display_df.sort_values('Actual Position')
@@ -253,12 +254,12 @@ def predict_race() -> None:
                 (test_season, test_round, race_name),
             )
         else:
-            logging.warning("No Matching Driver IDs Found for Evaluation")
+            logging.warning('No Matching Driver IDs Found for Evaluation')
 
     else:
-        logging.info("No Actual Results Available for Evaluation")
+        logging.info('No Actual Results Available for Evaluation')
 
-    logging.info("Predictions Generated Successfully!")
+    logging.info('Predictions Generated Successfully!')
 
 
 def start(initial_choice: int | None = None) -> None:
@@ -267,20 +268,20 @@ def start(initial_choice: int | None = None) -> None:
     while True:
         print()
 
-        header = "F1 Race Forecasting"
+        header = 'F1 Race Forecasting'
         logging.info(header)
 
-        logging.info("[1] Fetch from Ergast API")
-        logging.info("[2] Parse the RAW Data")
-        logging.info("[3] Predict Race Results")
-        logging.info("[4] Exit")
+        logging.info('[1] Fetch from Ergast API')
+        logging.info('[2] Parse the RAW Data')
+        logging.info('[3] Predict Race Results')
+        logging.info('[4] Exit')
 
         if initial_choice is not None:
-            print(f"\nEnter your Choice: {initial_choice}")
+            print(f'\nEnter your Choice: {initial_choice}')
             choice = str(initial_choice)
             initial_choice = None
         else:
-            choice = input("\nEnter your Choice: ")
+            choice = input('\nEnter your Choice: ')
 
         print()
         if choice == '1':
@@ -290,7 +291,7 @@ def start(initial_choice: int | None = None) -> None:
         elif choice == '3':
             predict_race()
         elif choice == '4':
-            logging.info("Exiting . . .")
+            logging.info('Exiting . . .')
             break
         else:
-            logging.error("Invalid Choice - Please Try Again!")
+            logging.error('Invalid Choice - Please Try Again!')
