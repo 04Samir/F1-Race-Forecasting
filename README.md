@@ -58,7 +58,7 @@ Raw Data is Transformed into Predictive Features:
 - **Strategic Elements**: Pit Stop Patterns and Race Pace Analysis
 
 ### 3. **Model Training**
-A Bidirectional LSTM with Attention Mechanism Learns Complex Patterns:
+A Bi-Directional LSTM with Attention Mechanism Learns Complex Patterns:
 - Sequences of 5 Races Capture Driver Momentum
 - Attention Layers Focus on Most Relevant Historical Performances
 - Custom Loss Functions Optimise for Racing Position Prediction
