@@ -105,7 +105,7 @@ def predict_race() -> None:
     logging.info('')
 
     logging.info('Training Model . . .')
-    predictor = F1RacePredictor(use_saved_model=False)
+    predictor = F1RacePredictor(use_saved_model=True)
     train_losses, val_losses = predictor.train(
         feature_processor,
         X_train, y_train, sample_weights_train,
